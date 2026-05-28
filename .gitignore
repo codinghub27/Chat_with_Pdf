@@ -1,0 +1,11 @@
+.env
+faiss_indexes/
+*.pyc
+__pycache__/
+.pyo
+.pyd
+db.sqlite3
+media/
+venv/
+env/
+.venv/

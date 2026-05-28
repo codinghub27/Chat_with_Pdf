@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with PDF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f5f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top header */
+        .header {
+            padding: 48px 60px 20px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Chat messages area */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        .empty-hint {
+            color: #bbb;
+            font-size: 0.9rem;
+            text-align: center;
+            margin: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Message bubbles */
+        .message {
+            max-width: 55%;
+            width: fit-content;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            background-color: #1a1a1a;
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            background-color: #fff;
+            color: #1a1a1a;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        /* Typing indicator */
+        .typing {
+            display: none;
+            align-self: flex-start;
+            background: #fff;
+            padding: 12px 18px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #bbb;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        /* Bottom input bar */
+        .input-bar {
+            padding: 20px 60px 32px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 30px;
+            padding: 10px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            color: #333;
+            background: transparent;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #bbb;
+        }
+
+        .input-wrapper button {
+            background: #1a1a1a;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .input-wrapper button:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h1>Chat with PDF</h1>
+                <p>Ask anything about your uploaded PDF</p>
+            </div>
+            <a href="{% url 'index' %}" style="
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #fff;
+                border: 1px solid #e0e0e0;
+                color: #1a1a1a;
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: 600;
+                padding: 8px 18px;
+                border-radius: 30px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+                transition: background 0.2s;
+            ">&#8592; Back</a>
+        </div>
+    </div>
+
+    <div class="chat-area" id="chat-area">
+        {% for msg in messages %}
+        <div class="message user">{{ msg.question }}</div>
+        <div class="message bot">{{ msg.answer }}</div>
+        {% endfor %}
+        {% if not messages %}
+        <p class="empty-hint" id="empty-hint">Ask your first question below...</p>
+        {% endif %}
+    </div>
+
+    <div class="input-bar">
+        <form id="chat-form">
+            {% csrf_token %}
+            <div class="input-wrapper">
+                <input type="text" id="question" placeholder="Ask something about the PDF..." autocomplete="off">
+                <button type="submit">&#8593;</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Typing indicator (outside chat-area, appended dynamically) -->
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const chatArea = document.getElementById('chat-area');
+        const emptyHint = document.getElementById('empty-hint');
+
+        function addMessage(text, sender) {
+            const msg = document.createElement('div');
+            msg.classList.add('message', sender);
+            msg.innerText = text;
+            chatArea.appendChild(msg);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.classList.add('typing');
+            typing.id = 'typing-indicator';
+            typing.style.display = 'block';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            chatArea.appendChild(typing);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const question = document.getElementById('question').value.trim();
+            if (!question) return;
+
+            // Hide the empty hint
+            if (emptyHint) emptyHint.style.display = 'none';
+
+            // Show user message
+            addMessage(question, 'user');
+            document.getElementById('question').value = '';
+
+            // Show typing indicator
+            showTyping();
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: 'question=' + encodeURIComponent(question)
+            })
+            .then(res => res.json())
+            .then(data => {
+                hideTyping();
+                addMessage(data.answer, 'bot');
+            })
+            .catch(() => {
+                hideTyping();
+                addMessage('Something went wrong. Please try again.', 'bot');
+            });
+        });
+    </script>
+
+</body>
+</html>

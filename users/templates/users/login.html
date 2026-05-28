@@ -1,0 +1,45 @@
+{% extends 'myapp/index.html' %}
+{% block content %}
+
+<div class=" flex flex-col justify-center items-center min-h-screen p-10">
+    <h1>Login</h1>
+    <form method="POST" class="shadow-lg p-10 space-y-10">
+    {% csrf_token %}
+
+<!--        error checking-->
+
+        {% if form.non_field_errors %}
+        <div class="bg-red-500 text-white p-2 ">
+        {% for error in form.non_field_errors %}
+
+           <p> {{error}}</p>
+
+            {% endfor %}
+        </div>
+
+        {% endif %}
+
+        <!---->
+
+<!--        USer and password-->
+        <label class="font-bol ">Username</label>
+        <div class="border rounded p-2 text-slate-700 mb-2 ">
+        {{form.username}}
+        </div>
+
+
+        <label class="font-bold">Password</label>
+        <div class="border rounded p-2 ">
+        {{form.password}}
+        </div>
+
+        <button class="px-2 py-2 w-full bg-sky-700 text-white" type="submit">Login</button>
+        <div class="items-center flex justify-center"><a href="{% url 'register'%}">register</a></div>
+
+
+</form>
+
+</div>
+
+
+{% endblock %}

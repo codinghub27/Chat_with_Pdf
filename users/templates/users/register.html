@@ -1,0 +1,39 @@
+{% extends 'myapp/index.html' %}
+{% block content %}
+
+<div class=" flex flex-col justify-center items-center min-h-screen p-10">
+    <h1>Register</h1>
+    <form method="POST" class="shadow-lg p-10 space-y-10 p-5 w-80">
+    {% csrf_token %}
+
+       {% if form.non_field_errors %}
+        <div class="bg-red-500 text-white p-2 ">
+        {% for error in form.non_field_errors %}
+
+           <p> {{error}}</p>
+
+            {% endfor %}
+        </div>
+
+        {% endif %}
+
+
+    {% for field in form %}
+        <div>
+            <label>{{field.label}}</label>
+            <div class="border rounded">{{field}}</div>
+            {% for error in field.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+        <button class="px-2 py-2 w-full bg-sky-700 text-white" type="submit">Register</button>
+
+
+
+    </form>
+</div>
+
+
+{% endblock %}
+
