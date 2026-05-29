@@ -24,8 +24,13 @@ if hf_token:
     os.environ["HF_TOKEN"] = hf_token
 
 # Load embedding model ONCE at module level
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+_embeddings = None
 
+def get_embeddings():
+    global _embeddings
+    if _embeddings is None:
+        _embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    return _embeddings
 # In-memory retriever cache
 retrievers = {}
 
@@ -39,7 +44,7 @@ def process_pdf(pdf_path,pdf_id):
 
     # ✅ If already saved on disk, just load it
     if os.path.exists(index_path):
-        db=FAISS.load_local(index_path,embeddings,allow_dangerous_deserialization=True)
+        db=FAISS.load_local(index_path,get_embeddings(),allow_dangerous_deserialization=True)
         return db.as_retriever()
 
 
@@ -58,7 +63,7 @@ def process_pdf(pdf_path,pdf_id):
 
     db = FAISS.from_documents(
         documents,
-        embeddings
+        get_embeddings()
     )
     db.save_local(index_path)
 
