@@ -7,6 +7,7 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_classic.chains import create_retrieval_chain,create_history_aware_retriever
 from langchain_core.messages import HumanMessage,AIMessage
 from .models import ChatMessage
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_groq import ChatGroq
 import os
 from dotenv import load_dotenv
@@ -29,7 +30,7 @@ _embeddings = None
 def get_embeddings():
     global _embeddings
     if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        _embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
     return _embeddings
 # In-memory retriever cache
 retrievers = {}
