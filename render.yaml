@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: chat-with-pdf
+    env: python
+    pythonVersion: "3.11.0"
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn mysite.wsgi:application"
