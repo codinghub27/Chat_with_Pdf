@@ -440,7 +440,9 @@ Steps:
 
 ## 🙌 Author
 
-**Sravan** ([@codinghub27](https://github.com/codinghub27)), B.Tech CSE (4th year)
+**N Sravan Kumar** ([@codinghub27](https://github.com/codinghub27)), final-year B.Tech in Artificial Intelligence & Data Science, Swarnandhra College of Engineering and Technology, Narsapur
+
+[Portfolio](https://sravan-kumar-portfolio-umber.vercel.app/) · [LinkedIn](https://in.linkedin.com/in/sravan-n-1a32943aa) · [Email](mailto:sravannkumard@gmail.com)
 
 Built as a portfolio project combining Django backend development with a LangChain RAG pipeline.
 
