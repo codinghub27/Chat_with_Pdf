@@ -450,4 +450,4 @@ Built as a portfolio project combining Django backend development with a LangCha
 
 ## 📜 License
 
-This project is for educational and portfolio purposes.
+Released under the [MIT License](LICENSE).
